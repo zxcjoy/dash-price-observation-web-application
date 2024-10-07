@@ -46,3 +46,15 @@ The following tasks should be completed by the candidate in their preferred orde
 ### Enhancements ###
 
 Please list any enhancements made here
+
+### Screen Notes ###
+1. [] Price should be rounded to 2 decimal places
+2. [] City 'Los Angelos' seems a typo, may need check the database
+3. [] Same date with different price (for eggs) may need check if something is wrong
+4. [] Plain html with no style, need css or more to make it look better
+
+### Application Description ###
+- Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City
+- Support manually enter an observation
+- Support delete an observation
+
