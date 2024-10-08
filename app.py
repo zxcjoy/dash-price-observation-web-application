@@ -58,6 +58,7 @@ app.layout = html.Div([
         dcc.Checklist(['Yes'], ['Yes'], id='delete-most-recent-toggle'), # (list of available options in the checklist, initial value of the checklist) -> a list containing the selected options
         html.Br(),
         html.Button('Delete Matching Observations', id='delete-button'),
+        html.Div(id='error-message-delete', style={'color': 'red'}),  # Display error messages
 
     ], style={'padding': 10, 'flex': 1}),
     html.Div(children=[
@@ -74,6 +75,7 @@ app.layout = html.Div([
     Output(component_id='observation-table', component_property='data'),
     Output(component_id='observation-graph', component_property='figure'),
     Output(component_id='error-message-save',component_property='children'),
+    Output(component_id='error-message-delete',component_property='children'),
     Input(component_id='save-button', component_property='n_clicks'),
     Input(component_id='delete-button', component_property='n_clicks'),
     State(component_id='date-input', component_property='date'),
@@ -92,14 +94,25 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
 
     if button_id == 'save-button' and save_clicks >= 1:
         print('save button clicked')
-        if price is None or price == '':
-            return no_update, no_update, 'Error: Price cannot be empty.'  # Return error message if price is empty
+        # if price is None or price == '':
+        #     return no_update, no_update, 'Error: Price cannot be empty.'  # Return error message if price is empty
+        
+        # Through error handling for entered price, only support valid numeric values
+        try:
+            price_rounded = round(float(price), 4)
+        except (ValueError, TypeError):
+            return no_update, no_update, 'Error: Please enter a valid numeric value for Price.', ''
 
         obj = Observation(Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
-                          Category=category, Item=item, Price=float(price), State=state, City=city)
+                          Category=category, Item=item, Price=price_rounded, State=state, City=city)
         obj.write()
     elif button_id == 'delete-button' and delete_clicks >= 1:
         print('delete button clicked')
+        if price:
+            try:
+                price_rounded = round(float(price), 4)
+            except (ValueError, TypeError):
+                return no_update, no_update, '', 'Error: Please enter a valid numeric value for Price.'
         order_to_delete_in = {'AddedOn': False} if delete_most_recent else None  # Addedon Date DESC if chose delete most recent
         Observation().delete_matching(
             n_to_delete=int(n_to_delete),
@@ -112,7 +125,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
 
     df = Observation.table_df() # update the df to display the latest data
 
-    return df.to_dict('records'), px.scatter(df, x='Date', y='Price', color='Item'),''
+    return df.to_dict('records'), px.scatter(df, x='Date', y='Price', color='Item'),'',''
 
 
 if __name__ == '__main__':

@@ -32,6 +32,16 @@ def sqlize(v: Union[str, int, float, bool, datetime.date, datetime.date]) -> str
         v = int(v)
     return f"'{v}'" if isinstance(v, str) else str(v)
 
+def custom_rounding(row):
+    """
+    Round the price based on the item, considering the real-world senario of each item
+    """
+    if row['Item'] in ['USDA Grade-A eggs (Dozen)', 'Wool Socks (Pair)']:
+        return round(row['Price'], 2)
+    elif row['Item'] == 'Regular Gasoline (Gallon)':
+        return round(row['Price'], 3)
+    else:
+        return row['Price']
 
 class Observation:
 
@@ -43,15 +53,15 @@ class Observation:
     City: Optional[str] = None
     AddedOn: datetime.datetime = datetime.datetime.now()
 
-    category_item_map = {'Food': ['USDA Grade-A eggs, Dozen'],
-                         'Fuel': ['Regular Gasoline, Gallon'],
-                         'Clothing': ['Wool Socks, Pair']}
+    category_item_map = {'Food': ['USDA Grade-A eggs (Dozen)'],
+                         'Fuel': ['Regular Gasoline (Gallon)'],
+                         'Clothing': ['Wool Socks (Pair)']}
     state_city_map = {'California': ['Los Angeles', 'San Francisco'],
                       'New York': ['New York City'],
                       'Texas': ['Austin', 'Dallas']}
-    item_base_price = {'USDA Grade-A eggs, Dozen': 2.99,
-                       'Regular Gasoline, Gallon': 4.65,
-                       'Wool Socks, Pair': 21.95}
+    item_base_price = {'USDA Grade-A eggs (Dozen)': 2.99,
+                       'Regular Gasoline (Gallon)': 4.65,
+                       'Wool Socks (Pair)': 21.95}
     state_price_mu_std = {'California': (1.5, 0.15),
                           'New York': (1.75, 0.25),
                           'Texas': (1, 0.10)}
@@ -100,7 +110,7 @@ class Observation:
         create table Observation (
             Date date not null,
             Item text not null,
-            Price numeric not null,
+            Price numeric(10,4) not null,
             Category text not null,
             State text not null,
             City text not null,
@@ -117,7 +127,7 @@ class Observation:
     @classmethod
     def get_test_data(cls) -> pd.DataFrame:
         dt_range = pd.date_range(end=datetime.date.today(), periods=10, freq='D', inclusive='both')
-        combos = [{'Date': dt, 'Category': cat, 'Item': item, 'State': state, 'City': city}
+        combos = [{'Date': dt.date(), 'Category': cat, 'Item': item, 'State': state, 'City': city}
                   for cat, items in cls.category_item_map.items()
                   for item in items
                   for state, cities in cls.state_city_map.items()
@@ -132,6 +142,8 @@ class Observation:
         # Generate a gaussian price based on the state standard deviation
         df['Price'] = df.apply(lambda s: random.gauss(s['Price'], s['Price'] * cls.state_price_mu_std[s['State']][1]),
                                axis=1)
+        df['Price'] = df.apply(custom_rounding, axis=1) # Apply rounding function with better real-word meaning
+        df['Price'] = df['Price'].apply(lambda x: round(x, 4))
         return df
 
     @staticmethod
