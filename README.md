@@ -52,6 +52,14 @@ Please list any enhancements made here
 2. [] City 'Los Angelos' seems a typo, may need check the database
 3. [] Same date with different price (for eggs) may need check if something is wrong
 4. [] Plain html with no style, need css or more to make it look better
+5. [] After selecting a category, items should be limited to only in that category
+6. [] Similarly, State shoule constraint the city selection
+7. [] Inconsistency of SQL notation, e.g. "WHERE" vs "where", most of the time it is "where", should adhere to lower case
+8. [DONE] Task 1: Complete the ``Observation.delete_matching`` method in cpi.py
+9. [] Task 2: Integrate the delete_matching method into the app, allow user to delete observations
+10. [] Task 3: Solve the "Average Item Price by City" graph point scale problem
+11. [] Task 4: Implement the "Average Item Price by City" as grouped bar graph
+
 
 ### Application Description ###
 - Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City

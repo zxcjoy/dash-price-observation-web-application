@@ -72,16 +72,18 @@ app.layout = html.Div([
     Output(component_id='observation-table', component_property='data'),
     Output(component_id='observation-graph', component_property='figure'),
     Input(component_id='save-button', component_property='n_clicks'),
+    Input(component_id='delete-button', component_property='n_clicks'),
     State(component_id='date-input', component_property='date'),
     State(component_id='category-input', component_property='value'),
     State(component_id='item-input', component_property='value'),
     State(component_id='price-input', component_property='value'),
     State(component_id='state-input', component_property='value'),
-    State(component_id='city-input', component_property='value')
+    State(component_id='city-input', component_property='value'),
+    State(component_id='delete-n-observations', component_property='value')
 )
-def update_observation(n_clicks: float, date: str, category: str, item: str, price: str,
-                       state: str, city: str):
-    if n_clicks >= 1:
+def update_observation(save_click: float, delete_click: float, date: str, category: str, item: str, 
+                       price: str, state: str, city: str, n_to_delete: int):
+    if save_click >= 1:
         obj = Observation(Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
                           Category=category, Item=item, Price=float(price), State=state, City=city)
         obj.write()

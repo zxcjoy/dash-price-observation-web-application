@@ -19,6 +19,9 @@ db_file = 'test.db'
 
 
 def sqlize(v: Union[str, int, float, bool, datetime.date, datetime.date]) -> str:
+    """
+    Convert an input value to a string that matches the data type used in an SQL statement
+    """
     if isinstance(v, str):
         v = v.replace("'", "''")
     elif isinstance(v, datetime.datetime):
@@ -43,7 +46,7 @@ class Observation:
     category_item_map = {'Food': ['USDA Grade-A eggs, Dozen'],
                          'Fuel': ['Regular Gasoline, Gallon'],
                          'Clothing': ['Wool Socks, Pair']}
-    state_city_map = {'California': ['Los Angelos', 'San Francisco'],
+    state_city_map = {'California': ['Los Angeles', 'San Francisco'],
                       'New York': ['New York City'],
                       'Texas': ['Austin', 'Dallas']}
     item_base_price = {'USDA Grade-A eggs, Dozen': 2.99,
@@ -81,9 +84,12 @@ class Observation:
                 logger.warning(f'{k} is not a valid attribute of Observation. Ignoring...')
 
     def write(self):
+        """
+        Write the Observation object into database (insert)
+        """
         with sqlite3.connect(db_file) as con:
             row = [sqlize(v) for v in [self.Date, self.Item, self.Price, self.Category, self.State, self.City]]
-            sql = (f'INSERT INTO Observation (Date, Item, Price, Category, State, City) values '
+            sql = (f'insert into Observation (Date, Item, Price, Category, State, City) values '
                    f'({", ".join(row)})')
             con.execute(sql)
 
@@ -134,14 +140,54 @@ class Observation:
             return pd.read_sql(sql, con)
 
     def delete_matching(self, n_to_delete: int = 1, order_to_delete_in: Optional[dict] = None, **kwargs):
+        """
+        Delete matched records from databse given parameters
+        """
         # TODO: Fill-in logic to delete rows from the table such that the key-value pairs in kwargs correspond to the
         #  column-value to match on.
         #  Ex. kwargs = {'State': 'Texas', 'City': 'Dallas'} would match all rows where the
         #  value of State = 'Texas' AND the value of City = 'Dallas'. n_to_delete specifies the number of matching rows
         #  to delete and order_to_delete_in is a dict of:
         #  {<column to use for ordering matching rows>: <True for ascending, False for descending>}
-        pass
+        
+        # Check for constraints of function parameters
+        if not kwargs:
+            raise ValueError('Must specify at least one column-value pair to match on')
+        if not isinstance(n_to_delete, int):
+            raise ValueError('n_to_delete must be an integer')
 
+        # The SQL should be like:
+        # SELECT FROM Observation WHERE {where_clause} {order_clause} LIMIT {n_to_delete};
+        where_clause = " and ".join([f"{k}={sqlize(v)}" for k,v in kwargs.items()])
+        order_clause = ""
+        if order_to_delete_in:
+            order_clause = "order by " + \
+                ", ".join([f"{k} {'asc' if v==True else 'desc'}" 
+                           for k,v in order_to_delete_in.items()]) # True for ascending, False for descending
+        # Select the rows to delete
+        sql_select = f"""
+        SELECT Date, Item, Price, Category, State, City FROM Observation
+        WHERE {where_clause}
+        {order_clause}
+        LIMIT {n_to_delete};
+        """
+        # print(sql_select)
+        with sqlite3.connect(db_file) as con:
+            cursor = con.cursor()
+            cursor.execute(sql_select)
+            rows_to_delete = cursor.fetchall()
+            if rows_to_delete:
+                for row in rows_to_delete:
+                    # Delete query
+                    delete_conditions = f"Date = '{row[0]}' and Item = '{row[1]}' and Price = {row[2]} and " \
+                                        f"Category = '{row[3]}' and State = '{row[4]}' and City = '{row[5]}'"
+                    
+                    sql_delete = f"delete from Observation where {delete_conditions}"
+                    # print(f"Now delete sql query: {sql_delete}")
+                    cursor.execute(sql_delete)
+            else:
+                print("No matching rows found to delete.")
+                
 
 if __name__ == '__main__':
     pass
