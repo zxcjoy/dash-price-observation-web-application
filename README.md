@@ -49,7 +49,7 @@ Please list any enhancements made here
 
 ### Screen Notes ###
 1. [] Price should be rounded to 2 decimal places
-2. [] City 'Los Angelos' seems a typo, may need check the database
+2. [DONE] City 'Los Angelos' seems a typo, may need check the database
 3. [] Same date with different price (for eggs) may need check if something is wrong
 4. [] Plain html with no style, need css or more to make it look better
 5. [] After selecting a category, items should be limited to only in that category
@@ -59,6 +59,8 @@ Please list any enhancements made here
 9. [] Task 2: Integrate the delete_matching method into the app, allow user to delete observations
 10. [] Task 3: Solve the "Average Item Price by City" graph point scale problem
 11. [] Task 4: Implement the "Average Item Price by City" as grouped bar graph
+12. [] Add Observation should forbid None price value while delete Observation should allow None price value, need to modify the app frame to correctly handle this
+13. [] Data table in app is not sorted, making it hard to find an observation, consider to add ranking by columns
 
 
 ### Application Description ###

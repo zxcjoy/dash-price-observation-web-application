@@ -92,6 +92,7 @@ class Observation:
             sql = (f'insert into Observation (Date, Item, Price, Category, State, City) values '
                    f'({", ".join(row)})')
             con.execute(sql)
+            print(f'{sql} executed successfully')
 
     @classmethod
     def create_table(cls):
@@ -158,7 +159,9 @@ class Observation:
 
         # The SQL should be like:
         # SELECT FROM Observation WHERE {where_clause} {order_clause} LIMIT {n_to_delete};
-        where_clause = " and ".join([f"{k}={sqlize(v)}" for k,v in kwargs.items()])
+        print('delete_matching methods called!')
+        filtered_kwargs = {k: v for k, v in kwargs.items() if v is not None} # Support None Price values, which means not filtering on Price
+        where_clause = " and ".join([f"{k}={sqlize(v)}" for k,v in filtered_kwargs.items()])
         order_clause = ""
         if order_to_delete_in:
             order_clause = "order by " + \
@@ -166,12 +169,12 @@ class Observation:
                            for k,v in order_to_delete_in.items()]) # True for ascending, False for descending
         # Select the rows to delete
         sql_select = f"""
-        SELECT Date, Item, Price, Category, State, City FROM Observation
+        SELECT Date, Item, Price, Category, State, City, AddedOn FROM Observation
         WHERE {where_clause}
         {order_clause}
         LIMIT {n_to_delete};
         """
-        # print(sql_select)
+        print('sql_select:', sql_select)
         with sqlite3.connect(db_file) as con:
             cursor = con.cursor()
             cursor.execute(sql_select)
@@ -180,10 +183,11 @@ class Observation:
                 for row in rows_to_delete:
                     # Delete query
                     delete_conditions = f"Date = '{row[0]}' and Item = '{row[1]}' and Price = {row[2]} and " \
-                                        f"Category = '{row[3]}' and State = '{row[4]}' and City = '{row[5]}'"
+                                        f"Category = '{row[3]}' and State = '{row[4]}' and City = '{row[5]}'" \
+                                        f"and AddedOn = '{row[6]}' "
                     
                     sql_delete = f"delete from Observation where {delete_conditions}"
-                    # print(f"Now delete sql query: {sql_delete}")
+                    print(f"Now delete sql query: {sql_delete}")
                     cursor.execute(sql_delete)
             else:
                 print("No matching rows found to delete.")

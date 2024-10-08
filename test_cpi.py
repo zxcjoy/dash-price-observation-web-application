@@ -40,7 +40,7 @@ class TestObservation(unittest.TestCase):
         Observation().delete_matching(
             n_to_delete = 1, 
             order_to_delete_in = {'Date': False},
-            State='Texas', City='Dallas'
+            State ='Texas', City='Dallas'
         )
 
         # Verify deletion
