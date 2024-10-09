@@ -43,9 +43,9 @@ Author: Ziyu Chen
 Please list any enhancements made here
 
 ### Screen Notes ###
-1. [] Price should be rounded to 2 decimal places
+1. [DONE] Price should be rounded to 2 decimal places -> after consideration, using 4 decimal places
 2. [DONE] City 'Los Angelos' seems a typo, may need check the database
-3. [] Same date with different price (for eggs) may need check if something is wrong
+3. [IGNORE] Same date with different price may need check if something is wrong
 4. [] Plain html with no style, need css or more to make it look better
 5. [] After selecting a category, items should be limited to only in that category
 6. [] Similarly, State shoule constraint the city selection
@@ -55,14 +55,15 @@ Please list any enhancements made here
 10. [DONE] Task 3: Solve the "Average Item Price by City" graph point scale problem
   -> point size is larger when  there are more observations with the same price
   -> point size is smaller when there are less observations with the same price
-11. [] Task 4: Implement the "Average Item Price by City" as grouped bar graph
+11. [DONE] Task 4: Implement the "Average Item Price by City" as grouped bar graph
 12. [Done] Add Observation should forbid None price value while delete Observation should allow None price value, need to modify the app frame to correctly handle this
 13. [] Data table in app is not sorted, making it hard to find an observation, consider to add ranking by columns
 14. [DONE] More restraints should be applied on the Price field, e.g. string should not be allowed
 15. [DONE] Date column contain hour-minute-second, which is not necessary and not consistent with add and delete methods, should be removed
 16. [] Consider add a delete successful message: how many observations are deleted or no mathch
 17. [] Consider add an add successful message: e.g. 'The provided observation has been added'
-18. [] In scatter plot, the point size with only one data is very small to see, need to fix it
+18. [DONE] In scatter plot, the point size with only one data is very small to see, need to fix it
+19. [] As the `Average Item Price by City` graph supports different date, when changing date, the graph should be updated, the date is set as a State which does not trigger callback,  need to fix it
 
 ### Overall Application Description ###
 - Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City

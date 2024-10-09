@@ -7,6 +7,7 @@ import datetime
 import plotly.express as px
 from dash import Dash, html, dcc, dash_table, Input, Output, State
 from dash import callback_context, no_update
+import pandas as pd
 # Internal
 from cpi import Observation
 
@@ -127,7 +128,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, graph
         )
 
     df = Observation.table_df() # update the df to display the latest data
-
+    df['Date'] = pd.to_datetime(df['Date']).dt.date
     # Deal with the graph
     # https://plotly.com/python-api-reference/generated/plotly.express.scatter.html
     # https://plotly.com/python/px-arguments/
@@ -150,6 +151,20 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, graph
         )
         df.drop('Count', axis=1, inplace=True) # Drop the Count column
         df.drop('Mapped_Count', axis=1, inplace=True) # Drop the Mapped_Count column
+    elif graph_type == 'Average Item Price by City':
+        selected_date = datetime.datetime.strptime(date, '%Y-%m-%d').date() # The date in the Date field
+        print('Average Item Price by City, selected_date:', selected_date)
+        df_filtered = df[df['Date'] == selected_date]
+        avg_df = df_filtered.groupby(['Item', 'City'])['Price'].mean().reset_index()
+        fig = px.bar(
+            avg_df, 
+            x='Item',  # The bars should be grouped together by item type 
+            y='Price', 
+            color='City', # The color of each bar should correspond to the city -> same city, same color
+            barmode='group',
+            labels={'Price': 'Average Price'},
+            title=f'Average Item Price by City on {selected_date}'
+        )
         
     return df.to_dict('records'), fig, '', ''
 
