@@ -137,6 +137,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
     Callback function to add/delete observations or update the graph based on trigged component.
     """
     ctx = callback_context
+    message_add, message_delete = '', ''
     # Deal with the save button or delete button
     button_id = ctx.triggered[0]['prop_id'].split('.')[0] # component id
     if button_id == 'save-button' and save_clicks >= 1:
@@ -148,7 +149,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
 
         obj = Observation(Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
                           Category=category, Item=item, Price=price_rounded, State=state, City=city)
-        obj.write()
+        flag, message_add = obj.write()
 
     elif button_id == 'delete-button' and delete_clicks >= 1:
         # Error handling for price
@@ -158,7 +159,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             except (ValueError, TypeError):
                 return no_update, no_update, '', 'Error: Please enter a valid numeric value for Price.'
         order_to_delete_in = {'AddedOn': False} if delete_most_recent else None  # Addedon Date DESC if chose delete most recent
-        Observation().delete_matching(
+        num_deleted, message_delete = Observation().delete_matching(
             n_to_delete=int(n_to_delete),
             order_to_delete_in=order_to_delete_in,
             Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
@@ -166,6 +167,8 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             Price=float(price) if price else None,
             State=state, City=city
         )
+        if num_deleted: 
+            message_delete = f'{num_deleted} {message_delete}.' # e.g. '1 Observation deleted.'
 
     df = Observation.table_df() # update the df to display the latest data
     df['Date'] = pd.to_datetime(df['Date']).dt.date # Convert pandas object to datetime, allow comparing to select date
@@ -208,7 +211,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             title=f'Average Item Price by City on {selected_date}'
         )
 
-    return df.to_dict('records'), fig, '', ''
+    return df.to_dict('records'), fig, message_add, message_delete
 
 if __name__ == '__main__':
     app.run_server(debug=True)  # Runs at localhost:8050 by default

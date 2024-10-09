@@ -95,15 +95,19 @@ class Observation:
 
     def write(self):
         """
-        Write the Observation object into database (insert)
+        Write the Observation object into database (insert), return (Bool value, error message) to indicate success
         """
-        with sqlite3.connect(db_file) as con:
-            row = [sqlize(v) for v in [self.Date, self.Item, self.Price, self.Category, self.State, self.City]]
-            sql = (f'insert into Observation (Date, Item, Price, Category, State, City) values '
-                   f'({", ".join(row)})')
-            con.execute(sql)
-            print(f'{sql} executed successfully')
-
+        try:
+            with sqlite3.connect(db_file) as con:
+                row = [sqlize(v) for v in [self.Date, self.Item, self.Price, self.Category, self.State, self.City]]
+                sql = (f'insert into Observation (Date, Item, Price, Category, State, City) values '
+                    f'({", ".join(row)})')
+                con.execute(sql)
+                # print(f'{sql} executed successfully')
+            return (True, 'New Observation added to database successfully')
+        except:
+            return (False, 'Failed to add new Observation to database')
+        
     @classmethod
     def create_table(cls):
         sql = '''
@@ -154,7 +158,7 @@ class Observation:
 
     def delete_matching(self, n_to_delete: int = 1, order_to_delete_in: Optional[dict] = None, **kwargs):
         """
-        Delete matched records from databse given parameters
+        Delete matched records from databse given parameters, return (number of rows deleted, error message)
         """
         # TODO: Fill-in logic to delete rows from the table such that the key-value pairs in kwargs correspond to the
         #  column-value to match on.
@@ -186,7 +190,9 @@ class Observation:
         {order_clause}
         LIMIT {n_to_delete};
         """
-        print('sql_select:', sql_select)
+        # print('sql_select:', sql_select)
+        message = 'Unknown system error'
+        num_deleted = 0
         with sqlite3.connect(db_file) as con:
             cursor = con.cursor()
             cursor.execute(sql_select)
@@ -199,11 +205,14 @@ class Observation:
                                         f"and AddedOn = '{row[6]}' "
                     
                     sql_delete = f"delete from Observation where {delete_conditions}"
-                    print(f"Now delete sql query: {sql_delete}")
+                    # print(f"Now delete sql query: {sql_delete}")
                     cursor.execute(sql_delete)
+                num_deleted = len(rows_to_delete)
+                message = 'matching observations deleted'
             else:
-                print("No matching rows found to delete.")
-                
+                # print("No matching observation found to delete.")
+                message = 'No matching rows found'
+        return (num_deleted, message)
 
 if __name__ == '__main__':
     pass

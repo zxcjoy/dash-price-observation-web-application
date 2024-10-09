@@ -47,8 +47,8 @@ Please list any enhancements made here
 2. [DONE] City 'Los Angelos' seems a typo, may need check the database
 3. [IGNORE] Same date with different price may need check if something is wrong
 4. [] Plain html with no style, need css or more to make it look better
-5. [] After selecting a category, items should be limited to only in that category
-6. [] Similarly, State shoule constraint the city selection
+5. [DONE] After selecting a category, items should be limited to only in that category
+6. [DONE] Similarly, State shoule constraint the city selection
 7. [DONE] Inconsistency of SQL notation, e.g. "WHERE" vs "where", most of the time it is "where", should adhere to lower case
 8. [DONE] Task 1: Complete the ``Observation.delete_matching`` method in cpi.py
 9. [DONE] Task 2: Integrate the delete_matching method into the app, allow user to delete observations
@@ -57,11 +57,11 @@ Please list any enhancements made here
   -> point size is smaller when there are less observations with the same price
 11. [DONE] Task 4: Implement the "Average Item Price by City" as grouped bar graph
 12. [Done] Add Observation should forbid None price value while delete Observation should allow None price value, need to modify the app frame to correctly handle this
-13. [] Data table in app is not sorted, making it hard to find an observation, consider to add ranking by columns
+13. [DONE] Data table in app is not sorted, making it hard to find an observation, consider to add ranking by columns
 14. [DONE] More restraints should be applied on the Price field, e.g. string should not be allowed
 15. [DONE] Date column contain hour-minute-second, which is not necessary and not consistent with add and delete methods, should be removed
-16. [] Consider add a delete successful message: how many observations are deleted or no mathch
-17. [] Consider add an add successful message: e.g. 'The provided observation has been added'
+16. [DONE] Consider add a delete successful message: how many observations are deleted or no mathch
+17. [DONE] Consider add an add successful message: e.g. 'The provided observation has been added'
 18. [DONE] In scatter plot, the point size with only one data is very small to see, need to fix it
 19. [DONE] As the `Average Item Price by City` graph supports different date, when changing date, the graph should be updated, the date is set as a State which does not trigger callback,  need to fix it
 
