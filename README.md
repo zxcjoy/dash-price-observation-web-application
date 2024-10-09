@@ -56,7 +56,7 @@ List of tasks to do:
 1. [DONE] Price should be rounded to 2 decimal places -> after consideration, using 4 decimal places
 2. [DONE] City 'Los Angelos' seems a typo, may need check the database
 3. [IGNORE] Same date with different price may need check if something is wrong
-4. [] Plain html with no style, need css or more to make it look better 
+4. [DONE] Plain html with no style, need css or more to make it look better 
 5. [DONE] After selecting a category, items should be limited to only in that category
 6. [DONE] Similarly, State shoule constraint the city selection
 7. [DONE] Inconsistency of SQL notation, e.g. "WHERE" vs "where", most of the time it is "where", should adhere to lower case
@@ -78,6 +78,9 @@ List of tasks to do:
 21. [DONE] Modify the position of each web component, e.g. not always on the left which is not a nice interface
 22. [DONE] Adding color to the interface, e.g. color of the button
 23. [DONE] Add icons to enhance the application (as recommended by the bootstrap documentation!)
+24. [DONE] BUG #1: When click 'x' to clear the selection of a state, error occurs as try to get a None value from a dict; similarly the category
+
+
 
 
 

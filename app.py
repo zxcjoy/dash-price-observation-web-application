@@ -89,9 +89,13 @@ app.layout = dbc.Container([
                 dbc.CardHeader(html.H3("Analytics Dashboard", className="text-center text-success")),
                 dbc.CardBody([
                     dbc.Row([
-                        dbc.Col(html.Label("Graph Type"), width=4),
+                        dbc.Col(
+                            html.Label("Graph Type", style={'textAlign': 'right', 'verticalAlign': 'middle'}),
+                            width='auto', 
+                            # className="d-flex align-items-center" # Center the text vertically
+                        ),
                         dbc.Col(dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'], 
-                                             value='Item Prices Over Time', id='graph-type'), width=8)
+                                             value='Item Prices Over Time', id='graph-type'), width=5)
                     ]),
                     dcc.Graph(figure={}, id='observation-graph', style={'height': '400px'}),
                     dash_table.DataTable(
@@ -106,6 +110,11 @@ app.layout = dbc.Container([
                             'height': 'auto',
                             'font-size': '12px'  # Reduced font size for table data
                         },
+                        style_header={
+                            'font-size': '14px',  # Reduced font size for header
+                            'backgroundColor': 'lightgrey',
+                            'fontWeight': 'bold'
+                        }
                     ),
                 ])
             ], className="shadow mb-4")
@@ -122,6 +131,9 @@ def set_items_options(selected_category):
     """
     Set the options and default value for the item dropdown based on the selected category.
     """
+    if selected_category is None:
+        # Return an empty list if no category is selected, avoid try to access None key in the dict -> BUG #1
+        return [], None
     items = Observation.category_item_map[selected_category]
     options = [{'label': item, 'value': item} for item in items]
     default_value = items[0] if items else None # Set the default value to the first item if available
@@ -136,6 +148,9 @@ def set_cities_options(selected_state):
     """
     Set the options and default value for the city dropdown based on the selected state.
     """
+    if selected_state is None:
+        # Return an empty list if no state is selected, avoid try to access None key in the dict -> BUG #1
+        return [], None
     cities = Observation.state_city_map[selected_state]
     options = [{'label': city, 'value': city} for city in cities]
     default_value = cities[0] if cities else None   # Set the default value to the first city if available
@@ -172,6 +187,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
     ctx = callback_context
     message_add, message_delete = '', ''
     alert = None
+    fig = None # fix BUG #1
     # Deal with the save button or delete button
     button_id = ctx.triggered[0]['prop_id'].split('.')[0] # component id
     if button_id == 'save-button' and save_clicks >= 1:
