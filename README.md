@@ -15,15 +15,10 @@ to your recruiter who will send to us.
 The following tasks should be completed by the candidate in their preferred order:
 
 * Complete the ``Observation.delete_matching`` method in cpi.py which contains detailed instructions.
-* When the "Delete Matching Observations" button is clicked, the ``Observation.delete_matching`` method is called and 
-  the database table, front-end table, and front-end graph are updated accordingly.
+* When the "Delete Matching Observations" button is clicked, the ``Observation.delete_matching`` method is called and the database table, front-end table, and front-end graph are updated accordingly.
 * When the "Graph Type" drop-down is set to "Item Price Over Time", multiple observations for the 
-  same item that have the same price causes the point size to scale proportionately to the number of matching
-  observations
-* Implement the "Average Item Price by City" graph type so that when it is selected, it changes the graph to a grouped 
-  bar graph where the height of a bar is the average price of an item in a city for the date in the "Date"
-  field. The bars should be grouped together by item type and the color of each bar should correspond to the city that 
-  the average item price applies to. [Example of a grouped bar graph](https://chartio.com/assets/24e451/tutorials/charts/grouped-bar-charts/c1fde6017511bbef7ba9bb245a113c07f8ff32173a7c0d742a4e1eac1930a3c5/grouped-bar-example-1.png)
+  same item that have the same price causes the point size to scale proportionately to the number of matching observations
+* Implement the "Average Item Price by City" graph type so that when it is selected, it changes the graph to a grouped bar graph where the height of a bar is the average price of an item in a city for the date in the "Date" field. The bars should be grouped together by item type and the color of each bar should correspond to the city that the average item price applies to. [Example of a grouped bar graph](https://chartio.com/assets/24e451/tutorials/charts/grouped-bar-charts/c1fde6017511bbef7ba9bb245a113c07f8ff32173a7c0d742a4e1eac1930a3c5/grouped-bar-example-1.png)
 
 ### Bonus Tasks ###
 * Please feel free to add any enhancements to the code that will make it production-level quality including:
@@ -44,7 +39,7 @@ The following tasks should be completed by the candidate in their preferred orde
 * recruiting@beneficient.com
 
 ### Enhancements ###
-
+Author: Ziyu Chen
 Please list any enhancements made here
 
 ### Screen Notes ###
@@ -57,13 +52,17 @@ Please list any enhancements made here
 7. [DONE] Inconsistency of SQL notation, e.g. "WHERE" vs "where", most of the time it is "where", should adhere to lower case
 8. [DONE] Task 1: Complete the ``Observation.delete_matching`` method in cpi.py
 9. [DONE] Task 2: Integrate the delete_matching method into the app, allow user to delete observations
-10. [] Task 3: Solve the "Average Item Price by City" graph point scale problem
+10. [DONE] Task 3: Solve the "Average Item Price by City" graph point scale problem
+  -> point size is larger when  there are more observations with the same price
+  -> point size is smaller when there are less observations with the same price
 11. [] Task 4: Implement the "Average Item Price by City" as grouped bar graph
 12. [Done] Add Observation should forbid None price value while delete Observation should allow None price value, need to modify the app frame to correctly handle this
 13. [] Data table in app is not sorted, making it hard to find an observation, consider to add ranking by columns
-14. [] More restraints should be applied on the Price field, e.g. no negative price, string should not be allowed
-15. [] Date column contain hour-minute-second, which is not necessary and not consistent with add and delete methods, should be removed
-
+14. [DONE] More restraints should be applied on the Price field, e.g. string should not be allowed
+15. [DONE] Date column contain hour-minute-second, which is not necessary and not consistent with add and delete methods, should be removed
+16. [] Consider add a delete successful message: how many observations are deleted or no mathch
+17. [] Consider add an add successful message: e.g. 'The provided observation has been added'
+18. [] In scatter plot, the point size with only one data is very small to see, need to fix it
 
 ### Overall Application Description ###
 - Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City

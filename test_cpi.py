@@ -28,7 +28,7 @@ class TestObservation(unittest.TestCase):
     def test_delete_matching(self):
         Observation.create_table()
 
-        obj = Observation(Date=datetime.date.today(), Item='USDA Grade-A eggs, Dozen', Price=9.99,
+        obj = Observation(Date=datetime.date.today(), Item='USDA Grade-A eggs (Dozen)', Price=9.9999,
                           Category='Food', State='Texas', City='Dallas')
         obj.write()
 
@@ -39,7 +39,7 @@ class TestObservation(unittest.TestCase):
         # Delete matching observations
         Observation().delete_matching(
             n_to_delete = 1, 
-            order_to_delete_in = {'Date': False},
+            order_to_delete_in = {'AddedOn': False},
             State ='Texas', City='Dallas'
         )
 
@@ -47,6 +47,17 @@ class TestObservation(unittest.TestCase):
         df_after = Observation.table_df()
         self.assertLess(len(df_after.index), len(df_before.index))
 
+    def test_same_value_data_points(self):
+        # Adding duplicate data points to test the graph with point size scale 
+        for i in range(20):
+            obj = Observation(Date=datetime.date.today(), Item='USDA Grade-A eggs (Dozen)', Price=4.01,
+                    Category='Food', State='Texas', City='Dallas')
+            obj.write()
+        for i in range(10):
+            obj = Observation(Date=datetime.date.today(), Item='USDA Grade-A eggs (Dozen)', Price=4.56,
+                          Category='Food', State='Texas', City='Dallas')
+            obj.write()
 
+        
 if __name__ == '__main__':
     unittest.main()

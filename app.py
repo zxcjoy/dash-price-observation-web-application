@@ -29,7 +29,7 @@ app.layout = html.Div([
 
         html.Label('Item'),
         dcc.Dropdown(options=Observation.available_items(),
-                     value='USDA Grade-A eggs, Dozen', id='item-input'),
+                     value='USDA Grade-A eggs (Dozen)', id='item-input'),
         html.Br(),
 
         html.Label('Price'),
@@ -65,7 +65,8 @@ app.layout = html.Div([
         html.Label('Graph Type'),
         dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'],
                      value='Item Prices Over Time', id='graph-type'),
-        dcc.Graph(figure=px.scatter(Observation.table_df(), x='Date', y='Price', color='Item'), id='observation-graph'),
+        # dcc.Graph(figure=px.scatter(Observation.table_df(), x='Date', y='Price', color='Item'), id='observation-graph'),
+        dcc.Graph(figure={}, id='observation-graph'),
         dash_table.DataTable(Observation.table_df().to_dict('records'), id='observation-table')
     ], style={'padding': 10, 'flex': 1})
 ], style={'display': 'flex', 'flex-direction': 'row'})
@@ -78,6 +79,7 @@ app.layout = html.Div([
     Output(component_id='error-message-delete',component_property='children'),
     Input(component_id='save-button', component_property='n_clicks'),
     Input(component_id='delete-button', component_property='n_clicks'),
+    Input(component_id='graph-type', component_property='value'),
     State(component_id='date-input', component_property='date'),
     State(component_id='category-input', component_property='value'),
     State(component_id='item-input', component_property='value'),
@@ -87,11 +89,12 @@ app.layout = html.Div([
     State(component_id='delete-n-observations', component_property='value'),
     State(component_id='delete-most-recent-toggle', component_property='value'),
 )
-def update_observation_and_graph(save_clicks: float, delete_clicks: float, date: str, category: str, item: str, 
-                       price: str, state: str, city: str, n_to_delete: int, delete_most_recent: list):
+def update_observation_and_graph(save_clicks: float, delete_clicks: float, graph_type: str,
+                    date: str, category: str, item: str, 
+                    price: str, state: str, city: str, n_to_delete: int, delete_most_recent: list):
     ctx = callback_context
+    # Deal with the save button or delete button
     button_id = ctx.triggered[0]['prop_id'].split('.')[0] # component id
-
     if button_id == 'save-button' and save_clicks >= 1:
         print('save button clicked')
         # if price is None or price == '':
@@ -125,7 +128,30 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
 
     df = Observation.table_df() # update the df to display the latest data
 
-    return df.to_dict('records'), px.scatter(df, x='Date', y='Price', color='Item'),'',''
+    # Deal with the graph
+    # https://plotly.com/python-api-reference/generated/plotly.express.scatter.html
+    # https://plotly.com/python/px-arguments/
+    if graph_type == 'Item Prices Over Time':
+        # Group by 'Item' and 'Price', count occurrences of each price for each item
+        # Normalize the count so that the miniimum point size is at least 3 ( 1 & 2 are too small in my screen!)
+        df['Count'] = df.groupby(['Item', 'Price'])['Price'].transform('count')
+        min_size, max_size = 3, 15
+        df['Mapped_Count'] = ((df['Count'] - df['Count'].min()) / (df['Count'].max() - df['Count'].min())) * (max_size - min_size) + min_size
+
+        fig = px.scatter(
+            df, 
+            x='Date',
+            y='Price', 
+            color='Item',
+            size='Mapped_Count',
+            hover_name='Item',
+            hover_data={'Price': True, 'Date': True,'Item': False,'Mapped_Count': False},
+            size_max=15,
+        )
+        df.drop('Count', axis=1, inplace=True) # Drop the Count column
+        df.drop('Mapped_Count', axis=1, inplace=True) # Drop the Mapped_Count column
+        
+    return df.to_dict('records'), fig, '', ''
 
 
 if __name__ == '__main__':
