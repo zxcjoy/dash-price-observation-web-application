@@ -42,11 +42,21 @@ The following tasks should be completed by the candidate in their preferred orde
 Author: Ziyu Chen
 Please list any enhancements made here
 
-### Screen Notes ###
+### Overall Application Description ###
+- Support two graph types: 1. Item Price Over Time 2. Average Item Price by City
+- Support manually enter an observation
+- Support manually delete an observation
+
+### Notes ###
+Tasks breakdown: 
+- 10/7: Overview of the project, screen for problems, understand the infrastructure, learn basic dash
+- 10/8: Complete 4 basic tasks
+- 10/9: Add improvements as instructed in the bonus tasks
+List of tasks to do:
 1. [DONE] Price should be rounded to 2 decimal places -> after consideration, using 4 decimal places
 2. [DONE] City 'Los Angelos' seems a typo, may need check the database
 3. [IGNORE] Same date with different price may need check if something is wrong
-4. [] Plain html with no style, need css or more to make it look better
+4. [] Plain html with no style, need css or more to make it look better 
 5. [DONE] After selecting a category, items should be limited to only in that category
 6. [DONE] Similarly, State shoule constraint the city selection
 7. [DONE] Inconsistency of SQL notation, e.g. "WHERE" vs "where", most of the time it is "where", should adhere to lower case
@@ -64,9 +74,11 @@ Please list any enhancements made here
 17. [DONE] Consider add an add successful message: e.g. 'The provided observation has been added'
 18. [DONE] In scatter plot, the point size with only one data is very small to see, need to fix it
 19. [DONE] As the `Average Item Price by City` graph supports different date, when changing date, the graph should be updated, the date is set as a State which does not trigger callback,  need to fix it
+20. [DONE] Enable two separate scrolling areas so that we can target data on the right, and enter it on the left for deletion
+21. [DONE] Modify the position of each web component, e.g. not always on the left which is not a nice interface
+22. [DONE] Adding color to the interface, e.g. color of the button
+23. [] Add icons to enhance the application (as recommended by the bootstrap documentation!)
 
-### Overall Application Description ###
-- Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City
-- Support manually enter an observation
-- Support manually delete an observation
+
+
 

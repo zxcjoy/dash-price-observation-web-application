@@ -8,80 +8,106 @@ import plotly.express as px
 from dash import Dash, html, dcc, dash_table, Input, Output, State
 from dash import callback_context, no_update
 import pandas as pd
+import dash_bootstrap_components as dbc
 # Internal
 from cpi import Observation
 
 
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=[dbc.themes.YETI, dbc.icons.BOOTSTRAP])
 
-app.layout = html.Div([
-    html.Div(children=[
-        html.H1('Price Observation Data Entry'),
-        html.Br(),
+def create_row(label, component, label_width=3, component_width=9):
+    return dbc.Row([
+        dbc.Col(dbc.Label(label), width=label_width),  # left column for label name
+        dbc.Col(component, width=component_width)      # right column for Input/drop down 
+    ], className="mb-3")  # Add some bottom margin for spacing
 
-        html.Label('Date'),
-        dcc.DatePickerSingle(date=datetime.date.today(), id='date-input'),
-        html.Br(),
+# Layout using Bootstrap's grid system (Container, Row, Col)
+# https://dash-bootstrap-components.opensource.faculty.ai/docs/
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardHeader(html.H3("Price Observation Data Entry", className="text-center text-primary")),
+                dbc.CardBody([
+                    # Observation input section
+                    create_row("Date", dcc.DatePickerSingle(date=datetime.date.today(), id='date-input')),
+                    create_row("Category", dcc.Dropdown(options=Observation.available_categories(), value='Food', id='category-input')),
+                    create_row("Item", dcc.Dropdown(id='item-input')),
+                    
+                    # Price input with popover for information
+                    dbc.Row([
+                        dbc.Col(dbc.Label("Price"), width=3),
+                        dbc.Col(dcc.Input(id='price-input'), width=6),
+                        # dbc.Col(html.Span("!", id="popover-target", style={'color': 'red', 'cursor': 'pointer'}), width=1)
+                        dbc.Col(html.I(className="bi bi-info-circle-fill", id="popover-target", 
+                                       style={'color': 'grey', 'cursor': 'pointer'}), width=1)
+                    ], className="mb-3"),
+                    
+                    # Popover for Price Input explanation
+                    dbc.Popover(
+                        dbc.PopoverBody("Please enter a valid number within 4 decimal places."),
+                        target="popover-target",  # Target the "!" span
+                        trigger="hover",  # Popover appears on hover (can also use 'click')
+                        placement="right"
+                    ),
 
-        html.Label('Category'),
-        dcc.Dropdown(options=Observation.available_categories(), value='Food', id='category-input'),
-        html.Br(),
+                    create_row("State", dcc.Dropdown(options=Observation.available_states(), value='Texas', id='state-input')),
+                    create_row("City", dcc.Dropdown(id='city-input')),
+                    html.Hr(), 
+                    
+                    # Delete functionality section
+                    dbc.Row([
+                        dbc.Col(dbc.Label("Number of Matching Records to Delete"), width=9),  # Label Column
+                        dbc.Col(dcc.Input(value=1, id='delete-n-observations', style={'width': '100%', 'maxWidth': '150px'}), width=3)         # Input/Component Column
+                    ], className="mb-3"),
 
-        html.Label('Item'),
-        dcc.Dropdown(id='item-input'),  # Use callback to set item options according to selected category
-        html.Br(),
-
-        # html.Label('Item'),
-        # dcc.Dropdown(options=Observation.available_items(),
-        #              value='USDA Grade-A eggs (Dozen)', id='item-input'),
-        # html.Br(),
-
-        html.Label('Price'),
-        dcc.Input(id='price-input'),
-        html.Br(),
-
-        html.Label('State'),
-        dcc.Dropdown(options=Observation.available_states(),
-                     value='Texas', id='state-input'),
-        html.Br(),
-
-        html.Label('City'),
-        dcc.Dropdown(id='city-input'), # Use callback to set city options according to selected state
-        # html.Label('City'),
-        # dcc.Dropdown(options=Observation.available_cities(),
-        #              value='Dallas', id='city-input'),
-        html.Br(),
-
-        html.Button('Save Observation', id='save-button', n_clicks=0),
-        html.Div(id='error-message-save', style={'color': 'red'}),  # Display error messages
-        html.Br(),
-        html.Br(),
-
-        html.Label('Number of Matching Observations to delete'),
-        dcc.Input(value=1, id='delete-n-observations'),
-        html.Br(),
-        html.Label('Delete Most Recent First?'),
-        dcc.Checklist(['Yes'], ['Yes'], id='delete-most-recent-toggle'), # (list of available options in the checklist, initial value of the checklist) -> a list containing the selected options
-        html.Br(),
-        html.Button('Delete Matching Observations', id='delete-button'),
-        html.Div(id='error-message-delete', style={'color': 'red'}),  # Display error messages
-
-    ], style={'padding': 10, 'flex': 1}),
-
-    html.Div(children=[
-        html.Label('Graph Type'),
-        dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'],
-                     value='Item Prices Over Time', id='graph-type'),
-        dcc.Graph(figure={}, id='observation-graph'),
-        dash_table.DataTable(
-            Observation.table_df().to_dict('records'), 
-            id='observation-table',
-            page_size=20,  # Set the number of rows to display per page
-            sort_action='native',  # Enable sorting
-            sort_mode='multi', # Enable sorting by multiple columns
-        )
-    ], style={'padding': 10, 'flex': 1})
-], style={'display': 'flex', 'flex-direction': 'row'})
+                    dbc.Row([
+                        dbc.Col(dbc.Label("Delete Most Recent Record First?"), width=9),  # Label Column
+                        dbc.Col(dcc.Checklist(['Yes'], ['Yes'], id='delete-most-recent-toggle'), width=3)          # Input/Component Column
+                    ], className="mb-3"),
+            
+                    # Buttons for save and delete
+                    html.Div([
+                        dbc.Button('Save Observation', id='save-button', color='primary', className='mr-2'),
+                        dbc.Button('Delete Observation', id='delete-button', color='danger')
+                    ], className="d-flex justify-content-between mt-3"),
+                    
+                    # Error messages
+                    html.Div(id='error-message-save', className="text-danger mt-2"),  
+                    html.Div(id='error-message-delete', className="text-danger mt-2"),
+                ])
+            ], className="shadow mb-4")
+        ], width=4, style={'max-height': '800px', 'overflow-y': 'scroll'}),
+        # ], width=4, style = {'position': 'sticky', 'top': '10px', 'zIndex': '1'}),
+        
+        dbc.Col([
+            dbc.Card([
+                dbc.CardHeader(html.H3("Analytics Dashboard", className="text-center text-success")),
+                dbc.CardBody([
+                    dbc.Row([
+                        dbc.Col(html.Label("Graph Type"), width=4),
+                        dbc.Col(dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'], 
+                                             value='Item Prices Over Time', id='graph-type'), width=8)
+                    ]),
+                    dcc.Graph(figure={}, id='observation-graph', style={'height': '400px'}),
+                    dash_table.DataTable(
+                        Observation.table_df().to_dict('records'),
+                        id='observation-table',
+                        page_size=20,
+                        sort_action='native',
+                        sort_mode='multi',
+                        style_table={'height': '600px', 'overflowY': 'auto', 'maxWidth': '100%'},  
+                        style_data={
+                            'whiteSpace': 'normal',
+                            'height': 'auto',
+                            'font-size': '12px'  # Reduced font size for table data
+                        },
+                    ),
+                ])
+            ], className="shadow mb-4")
+        ], width=8, style={'max-height': '800px', 'overflow-y': 'scroll'})
+    ])
+], fluid=True)  # `fluid=True` makes the container responsive and full-width
 
 # Callback to update Item based on selected Category
 @app.callback(
