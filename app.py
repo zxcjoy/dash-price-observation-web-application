@@ -14,7 +14,6 @@ from cpi import Observation
 
 app = Dash(__name__)
 
-
 app.layout = html.Div([
     html.Div(children=[
         html.H1('Price Observation Data Entry'),
@@ -29,9 +28,13 @@ app.layout = html.Div([
         html.Br(),
 
         html.Label('Item'),
-        dcc.Dropdown(options=Observation.available_items(),
-                     value='USDA Grade-A eggs (Dozen)', id='item-input'),
+        dcc.Dropdown(id='item-input'),  # Use callback to set item options according to selected category
         html.Br(),
+
+        # html.Label('Item'),
+        # dcc.Dropdown(options=Observation.available_items(),
+        #              value='USDA Grade-A eggs (Dozen)', id='item-input'),
+        # html.Br(),
 
         html.Label('Price'),
         dcc.Input(id='price-input'),
@@ -43,8 +46,10 @@ app.layout = html.Div([
         html.Br(),
 
         html.Label('City'),
-        dcc.Dropdown(options=Observation.available_cities(),
-                     value='Dallas', id='city-input'),
+        dcc.Dropdown(id='city-input'), # Use callback to set city options according to selected state
+        # html.Label('City'),
+        # dcc.Dropdown(options=Observation.available_cities(),
+        #              value='Dallas', id='city-input'),
         html.Br(),
 
         html.Button('Save Observation', id='save-button', n_clicks=0),
@@ -62,17 +67,46 @@ app.layout = html.Div([
         html.Div(id='error-message-delete', style={'color': 'red'}),  # Display error messages
 
     ], style={'padding': 10, 'flex': 1}),
+
     html.Div(children=[
         html.Label('Graph Type'),
         dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'],
                      value='Item Prices Over Time', id='graph-type'),
-        # dcc.Graph(figure=px.scatter(Observation.table_df(), x='Date', y='Price', color='Item'), id='observation-graph'),
         dcc.Graph(figure={}, id='observation-graph'),
         dash_table.DataTable(Observation.table_df().to_dict('records'), id='observation-table')
     ], style={'padding': 10, 'flex': 1})
 ], style={'display': 'flex', 'flex-direction': 'row'})
 
+# Callback to update Item based on selected Category
+@app.callback(
+    [Output('item-input', 'options'), Output('item-input', 'value')], 
+    Input('category-input', 'value')
+)
+def set_items_options(selected_category):
+    """
+    Set the options and default value for the item dropdown based on the selected category.
+    """
+    items = Observation.category_item_map[selected_category]
+    options = [{'label': item, 'value': item} for item in items]
+    default_value = items[0] if items else None # Set the default value to the first item if available
+    return options, default_value
 
+# Callback to update City based on selected State
+@app.callback(
+    [Output('city-input', 'options'), Output('city-input', 'value')],
+    Input('state-input', 'value')
+)
+def set_cities_options(selected_state):
+    """
+    Set the options and default value for the city dropdown based on the selected state.
+    """
+    cities = Observation.state_city_map[selected_state]
+    options = [{'label': city, 'value': city} for city in cities]
+    default_value = cities[0] if cities else None   # Set the default value to the first city if available
+    
+    return options, default_value
+
+# Callback to update graph or add/delete observations
 @app.callback(
     Output(component_id='observation-table', component_property='data'),
     Output(component_id='observation-graph', component_property='figure'),
@@ -91,16 +125,15 @@ app.layout = html.Div([
     State(component_id='delete-most-recent-toggle', component_property='value'),
 )
 def update_observation_and_graph(save_clicks: float, delete_clicks: float, date: str, graph_type: str,
-                    category: str, item: str, 
-                    price: str, state: str, city: str, n_to_delete: int, delete_most_recent: list):
+                    category: str, item: str, price: str, state: str, city: str,
+                     n_to_delete: int, delete_most_recent: list):
+    """
+    Callback function to add/delete observations or update the graph based on trigged component.
+    """
     ctx = callback_context
     # Deal with the save button or delete button
     button_id = ctx.triggered[0]['prop_id'].split('.')[0] # component id
     if button_id == 'save-button' and save_clicks >= 1:
-        print('save button clicked')
-        # if price is None or price == '':
-        #     return no_update, no_update, 'Error: Price cannot be empty.'  # Return error message if price is empty
-        
         # Through error handling for entered price, only support valid numeric values
         try:
             price_rounded = round(float(price), 4)
@@ -110,8 +143,9 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
         obj = Observation(Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
                           Category=category, Item=item, Price=price_rounded, State=state, City=city)
         obj.write()
+
     elif button_id == 'delete-button' and delete_clicks >= 1:
-        print('delete button clicked')
+        # Error handling for price
         if price:
             try:
                 price_rounded = round(float(price), 4)
@@ -128,13 +162,14 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
         )
 
     df = Observation.table_df() # update the df to display the latest data
-    df['Date'] = pd.to_datetime(df['Date']).dt.date
-    # Deal with the graph
+    df['Date'] = pd.to_datetime(df['Date']).dt.date # Convert pandas object to datetime, allow comparing to select date
+
+    # Deal with the graphs
     # https://plotly.com/python-api-reference/generated/plotly.express.scatter.html
     # https://plotly.com/python/px-arguments/
     if graph_type == 'Item Prices Over Time':
         # Group by 'Item' and 'Price', count occurrences of each price for each item
-        # Normalize the count so that the miniimum point size is at least 3 ( 1 & 2 are too small in my screen!)
+        # Normalize the count so that the minimum point size is at least 3 ( 1 & 2 are too small in my screen!)
         df['Count'] = df.groupby(['Item', 'Price'])['Price'].transform('count')
         min_size, max_size = 3, 15
         df['Mapped_Count'] = ((df['Count'] - df['Count'].min()) / (df['Count'].max() - df['Count'].min())) * (max_size - min_size) + min_size
@@ -147,10 +182,11 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             size='Mapped_Count',
             hover_name='Item',
             hover_data={'Price': True, 'Date': True,'Item': False,'Mapped_Count': False},
-            size_max=15,
+            size_max=15, # px scatter does not allow to set a min_size, this variable becomes optional as I have manullay mapped the count value to [3, 15]
         )
         df.drop('Count', axis=1, inplace=True) # Drop the Count column
         df.drop('Mapped_Count', axis=1, inplace=True) # Drop the Mapped_Count column
+
     elif graph_type == 'Average Item Price by City':
         selected_date = datetime.datetime.strptime(date, '%Y-%m-%d').date() # The date in the Date field
         print('Average Item Price by City, selected_date:', selected_date)
@@ -167,7 +203,6 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
         )
 
     return df.to_dict('records'), fig, '', ''
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)  # Runs at localhost:8050 by default

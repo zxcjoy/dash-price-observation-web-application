@@ -63,7 +63,7 @@ Please list any enhancements made here
 16. [] Consider add a delete successful message: how many observations are deleted or no mathch
 17. [] Consider add an add successful message: e.g. 'The provided observation has been added'
 18. [DONE] In scatter plot, the point size with only one data is very small to see, need to fix it
-19. [] As the `Average Item Price by City` graph supports different date, when changing date, the graph should be updated, the date is set as a State which does not trigger callback,  need to fix it
+19. [DONE] As the `Average Item Price by City` graph supports different date, when changing date, the graph should be updated, the date is set as a State which does not trigger callback,  need to fix it
 
 ### Overall Application Description ###
 - Support 2 graph types: 1. Item Price Over Time 2. Average Item Price by City
