@@ -72,9 +72,13 @@ app.layout = dbc.Container([
                         dbc.Button('Delete Observation', id='delete-button', color='danger')
                     ], className="d-flex justify-content-between mt-3"),
                     
-                    # Error messages
-                    html.Div(id='error-message-save', className="text-danger mt-2"),  
-                    html.Div(id='error-message-delete', className="text-danger mt-2"),
+                    # # Error messages
+                    # html.Div(id='error-message-save', className="text-danger mt-2"),  
+                    # html.Div(id='error-message-delete', className="text-danger mt-2"),
+
+                    # Notification messages (alerts) container
+                    html.Hr(), 
+                    html.Div(id='notification-container')
                 ])
             ], className="shadow mb-4")
         ], width=4, style={'max-height': '800px', 'overflow-y': 'scroll'}),
@@ -96,7 +100,7 @@ app.layout = dbc.Container([
                         page_size=20,
                         sort_action='native',
                         sort_mode='multi',
-                        style_table={'height': '600px', 'overflowY': 'auto', 'maxWidth': '100%'},  
+                        style_table={'height': '700px', 'overflowY': 'auto', 'maxWidth': '100%'},  
                         style_data={
                             'whiteSpace': 'normal',
                             'height': 'auto',
@@ -142,8 +146,7 @@ def set_cities_options(selected_state):
 @app.callback(
     Output(component_id='observation-table', component_property='data'),
     Output(component_id='observation-graph', component_property='figure'),
-    Output(component_id='error-message-save',component_property='children'),
-    Output(component_id='error-message-delete',component_property='children'),
+    Output(component_id='notification-container', component_property='children'),
     Input(component_id='save-button', component_property='n_clicks'),
     Input(component_id='delete-button', component_property='n_clicks'),
     Input(component_id='date-input', component_property='date'),
@@ -161,9 +164,14 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
                      n_to_delete: int, delete_most_recent: list):
     """
     Callback function to add/delete observations or update the graph based on trigged component.
+    Returns: 
+        - Updated table data
+        - Updated graph figure
+        - Notification message
     """
     ctx = callback_context
     message_add, message_delete = '', ''
+    alert = None
     # Deal with the save button or delete button
     button_id = ctx.triggered[0]['prop_id'].split('.')[0] # component id
     if button_id == 'save-button' and save_clicks >= 1:
@@ -171,11 +179,37 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
         try:
             price_rounded = round(float(price), 4)
         except (ValueError, TypeError):
-            return no_update, no_update, 'Error: Please enter a valid numeric value for Price.', ''
+            alert = dbc.Alert(
+                [
+                    html.I(className="bi bi-x-octagon-fill me-2"),  # danger icon for error
+                    "Invalid price format. Please enter a valid number."
+                ],
+                color="danger",
+                className="d-flex align-items-center"
+            )
+            return no_update, no_update, alert
 
         obj = Observation(Date=datetime.datetime.strptime(date, '%Y-%m-%d').date(),
                           Category=category, Item=item, Price=price_rounded, State=state, City=city)
         flag, message_add = obj.write()
+        if flag: # True if success
+            alert = dbc.Alert(
+                [
+                    html.I(className="bi bi-check-circle-fill me-2"),  # Checkmark icon for success
+                    message_add
+                ],
+                color="success",
+                className="d-flex align-items-center"
+            )
+        else: # False if fail
+            alert = dbc.Alert(
+                [
+                    html.I(className="bi bi-x-octagon-fill me-2"),  # danger icon for unknown system error
+                    message_add
+                ],
+                color="danger",
+                className="d-flex align-items-center"
+            )
 
     elif button_id == 'delete-button' and delete_clicks >= 1:
         # Error handling for price
@@ -183,7 +217,15 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             try:
                 price_rounded = round(float(price), 4)
             except (ValueError, TypeError):
-                return no_update, no_update, '', 'Error: Please enter a valid numeric value for Price.'
+                alert = dbc.Alert(
+                    [
+                        html.I(className="bi bi-x-octagon-fill me-2"),  # Danger icon for error
+                        "Error: Please enter a valid numeric value for Price."
+                    ],
+                    color="danger",
+                    className="d-flex align-items-center"
+                )
+                return no_update, no_update, alert
         order_to_delete_in = {'AddedOn': False} if delete_most_recent else None  # Addedon Date DESC if chose delete most recent
         num_deleted, message_delete = Observation().delete_matching(
             n_to_delete=int(n_to_delete),
@@ -194,7 +236,27 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             State=state, City=city
         )
         if num_deleted: 
+            # if num_deleted > 0, then delete successfully -> display success message
             message_delete = f'{num_deleted} {message_delete}.' # e.g. '1 Observation deleted.'
+            alert = dbc.Alert(
+                [
+                    html.I(className="bi bi-check-circle-fill me-2"),  # Checkmark icon for success
+                    message_delete
+                ],
+                color="success",
+                className="d-flex align-items-center"
+            )
+        else:
+            # if num_deleted == 0, then delete failed -> display warning message
+            alert = dbc.Alert(
+                [
+                    html.I(className="bi bi-exclamation-triangle-fill me-2"),  # Warning icon for no matching
+                    message_delete
+                ],
+                color="warning",
+                className="d-flex align-items-center"
+            )
+
 
     df = Observation.table_df() # update the df to display the latest data
     df['Date'] = pd.to_datetime(df['Date']).dt.date # Convert pandas object to datetime, allow comparing to select date
@@ -237,7 +299,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
             title=f'Average Item Price by City on {selected_date}'
         )
 
-    return df.to_dict('records'), fig, message_add, message_delete
+    return df.to_dict('records'), fig, alert
 
 if __name__ == '__main__':
     app.run_server(debug=True)  # Runs at localhost:8050 by default

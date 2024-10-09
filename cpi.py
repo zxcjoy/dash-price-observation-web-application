@@ -211,7 +211,7 @@ class Observation:
                 message = 'matching observations deleted'
             else:
                 # print("No matching observation found to delete.")
-                message = 'No matching rows found'
+                message = 'No matching record found'
         return (num_deleted, message)
 
 if __name__ == '__main__':

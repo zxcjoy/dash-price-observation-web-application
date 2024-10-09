@@ -77,7 +77,7 @@ List of tasks to do:
 20. [DONE] Enable two separate scrolling areas so that we can target data on the right, and enter it on the left for deletion
 21. [DONE] Modify the position of each web component, e.g. not always on the left which is not a nice interface
 22. [DONE] Adding color to the interface, e.g. color of the button
-23. [] Add icons to enhance the application (as recommended by the bootstrap documentation!)
+23. [DONE] Add icons to enhance the application (as recommended by the bootstrap documentation!)
 
 
 
