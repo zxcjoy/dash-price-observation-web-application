@@ -73,7 +73,13 @@ app.layout = html.Div([
         dcc.Dropdown(options=['Item Prices Over Time', 'Average Item Price by City'],
                      value='Item Prices Over Time', id='graph-type'),
         dcc.Graph(figure={}, id='observation-graph'),
-        dash_table.DataTable(Observation.table_df().to_dict('records'), id='observation-table')
+        dash_table.DataTable(
+            Observation.table_df().to_dict('records'), 
+            id='observation-table',
+            page_size=20,  # Set the number of rows to display per page
+            sort_action='native',  # Enable sorting
+            sort_mode='multi', # Enable sorting by multiple columns
+        )
     ], style={'padding': 10, 'flex': 1})
 ], style={'display': 'flex', 'flex-direction': 'row'})
 
