@@ -80,8 +80,8 @@ app.layout = html.Div([
     Output(component_id='error-message-delete',component_property='children'),
     Input(component_id='save-button', component_property='n_clicks'),
     Input(component_id='delete-button', component_property='n_clicks'),
+    Input(component_id='date-input', component_property='date'),
     Input(component_id='graph-type', component_property='value'),
-    State(component_id='date-input', component_property='date'),
     State(component_id='category-input', component_property='value'),
     State(component_id='item-input', component_property='value'),
     State(component_id='price-input', component_property='value'),
@@ -90,8 +90,8 @@ app.layout = html.Div([
     State(component_id='delete-n-observations', component_property='value'),
     State(component_id='delete-most-recent-toggle', component_property='value'),
 )
-def update_observation_and_graph(save_clicks: float, delete_clicks: float, graph_type: str,
-                    date: str, category: str, item: str, 
+def update_observation_and_graph(save_clicks: float, delete_clicks: float, date: str, graph_type: str,
+                    category: str, item: str, 
                     price: str, state: str, city: str, n_to_delete: int, delete_most_recent: list):
     ctx = callback_context
     # Deal with the save button or delete button
@@ -165,7 +165,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, graph
             labels={'Price': 'Average Price'},
             title=f'Average Item Price by City on {selected_date}'
         )
-        
+
     return df.to_dict('records'), fig, '', ''
 
 
