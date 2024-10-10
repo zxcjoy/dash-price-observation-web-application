@@ -330,7 +330,7 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
 
     elif graph_type == 'Average Item Price by City':
         selected_date = datetime.datetime.strptime(date, '%Y-%m-%d').date() # The date in the Date field
-        print('Average Item Price by City, selected_date:', selected_date)
+        # print('Average Item Price by City, selected_date:', selected_date)
         df_filtered = df[df['Date'] == selected_date]
         avg_df = df_filtered.groupby(['Item', 'City'])['Price'].mean().reset_index()
         fig = px.bar(

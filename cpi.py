@@ -27,23 +27,11 @@ class Observation:
     State: Optional[str] = None
     City: Optional[str] = None
     AddedOn: datetime.datetime = datetime.datetime.now()
-    
+
     category_item_map = CATEGORY_ITEM_MAP
     state_city_map = STATE_CITY_MAP
     item_base_price = ITEM_BASE_PRICE
     state_price_mu_std = STATE_PRICE_MU_STD
-    # category_item_map = {'Food': ['USDA Grade-A eggs (Dozen)'],
-    #                      'Fuel': ['Regular Gasoline (Gallon)'],
-    #                      'Clothing': ['Wool Socks (Pair)']}
-    # state_city_map = {'California': ['Los Angeles', 'San Francisco'],
-    #                   'New York': ['New York City'],
-    #                   'Texas': ['Austin', 'Dallas']}
-    # item_base_price = {'USDA Grade-A eggs (Dozen)': 2.99,
-    #                    'Regular Gasoline (Gallon)': 4.65,
-    #                    'Wool Socks (Pair)': 21.95}
-    # state_price_mu_std = {'California': (1.5, 0.15),
-    #                       'New York': (1.75, 0.25),
-    #                       'Texas': (1, 0.10)}
 
     @classmethod
     @functools.lru_cache(maxsize=None)
@@ -154,7 +142,7 @@ class Observation:
 
         # The SQL should be like:
         # SELECT FROM Observation WHERE {where_clause} {order_clause} LIMIT {n_to_delete};
-        print('delete_matching methods called!')
+        # print('delete_matching methods called!')
         filtered_kwargs = {k: v for k, v in kwargs.items() if v is not None} # Support None Price values, which means not filtering on Price
         where_clause = " and ".join([f"{k}={sqlize(v)}" for k,v in filtered_kwargs.items()])
         order_clause = ""
