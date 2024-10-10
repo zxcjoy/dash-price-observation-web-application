@@ -12,8 +12,8 @@ import dash_bootstrap_components as dbc
 # Internal
 from cpi import Observation
 
-
-app = Dash(__name__, external_stylesheets=[dbc.themes.YETI, dbc.icons.BOOTSTRAP])
+# https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/explorer/
+app = Dash(__name__, external_stylesheets=[dbc.themes.YETI, dbc.icons.BOOTSTRAP]) 
 
 def create_row(label, component, label_width=3, component_width=9):
     return dbc.Row([
@@ -23,7 +23,9 @@ def create_row(label, component, label_width=3, component_width=9):
 
 # Layout using Bootstrap's grid system (Container, Row, Col)
 # https://dash-bootstrap-components.opensource.faculty.ai/docs/
-app.layout = dbc.Container([
+# Layout with dcc.Loading wrapper
+
+dbc_Container = dbc.Container([
     dbc.Row([
         dbc.Col([
             dbc.Card([
@@ -121,6 +123,8 @@ app.layout = dbc.Container([
         ], width=8, style={'max-height': '800px', 'overflow-y': 'scroll'})
     ])
 ], fluid=True)  # `fluid=True` makes the container responsive and full-width
+
+app.layout = dbc_Container
 
 # Callback to update Item based on selected Category
 @app.callback(
