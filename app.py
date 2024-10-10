@@ -246,6 +246,30 @@ def update_observation_and_graph(save_clicks: float, delete_clicks: float, date:
                     className="d-flex align-items-center"
                 )
                 return no_update, no_update, alert
+        # Fix BUG #2, when n_to_delete is not specified
+        try:
+            n_to_delete = int(n_to_delete)
+        except (ValueError, TypeError):
+            alert_no_n_to_delete = dbc.Alert(
+                [
+                    html.I(className="bi bi-x-octagon-fill me-2"),  # Danger icon for error
+                    "Error: Please enter an Integer greater than 0 for Number of Observations to Delete."
+                ],
+                color="danger",
+                className="d-flex align-items-center"
+            )
+            return no_update, no_update, alert_no_n_to_delete
+        if not n_to_delete:
+            alert_no_n_to_delete = dbc.Alert(
+                [
+                    html.I(className="bi bi-x-octagon-fill me-2"),  # Danger icon for error
+                    "Error: Please enter an Integer greater than 0 for Number of Observations to Delete."
+                ],
+                color="danger",
+                className="d-flex align-items-center"
+            )
+            return no_update, no_update, alert_no_n_to_delete
+
         order_to_delete_in = {'AddedOn': False} if delete_most_recent else None  # Addedon Date DESC if chose delete most recent
         num_deleted, message_delete = Observation().delete_matching(
             n_to_delete=int(n_to_delete),

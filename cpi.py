@@ -12,36 +12,11 @@ from typing import Optional, Union
 # 3rd-party
 import pandas as pd
 # Internal
-
+from config import DB_FILE, CATEGORY_ITEM_MAP, ITEM_BASE_PRICE, STATE_CITY_MAP, STATE_PRICE_MU_STD
+from utils import sqlize, custom_rounding
 
 logger = logging.getLogger(__name__)
-db_file = 'test.db'
-
-
-def sqlize(v: Union[str, int, float, bool, datetime.date, datetime.date]) -> str:
-    """
-    Convert an input value to a string that matches the data type used in an SQL statement
-    """
-    if isinstance(v, str):
-        v = v.replace("'", "''")
-    elif isinstance(v, datetime.datetime):
-        v = v.strftime('%Y-%m-%d %H:%M:%S.%f')
-    elif isinstance(v, datetime.date):
-        v = v.strftime('%Y-%m-%d')
-    elif isinstance(v, bool):
-        v = int(v)
-    return f"'{v}'" if isinstance(v, str) else str(v)
-
-def custom_rounding(row):
-    """
-    Round the price based on the item, considering the real-world senario of each item
-    """
-    if row['Item'] in ['USDA Grade-A eggs (Dozen)', 'Wool Socks (Pair)']:
-        return round(row['Price'], 2)
-    elif row['Item'] == 'Regular Gasoline (Gallon)':
-        return round(row['Price'], 3)
-    else:
-        return row['Price']
+db_file =  DB_FILE
 
 class Observation:
 
@@ -52,19 +27,23 @@ class Observation:
     State: Optional[str] = None
     City: Optional[str] = None
     AddedOn: datetime.datetime = datetime.datetime.now()
-
-    category_item_map = {'Food': ['USDA Grade-A eggs (Dozen)'],
-                         'Fuel': ['Regular Gasoline (Gallon)'],
-                         'Clothing': ['Wool Socks (Pair)']}
-    state_city_map = {'California': ['Los Angeles', 'San Francisco'],
-                      'New York': ['New York City'],
-                      'Texas': ['Austin', 'Dallas']}
-    item_base_price = {'USDA Grade-A eggs (Dozen)': 2.99,
-                       'Regular Gasoline (Gallon)': 4.65,
-                       'Wool Socks (Pair)': 21.95}
-    state_price_mu_std = {'California': (1.5, 0.15),
-                          'New York': (1.75, 0.25),
-                          'Texas': (1, 0.10)}
+    
+    category_item_map = CATEGORY_ITEM_MAP
+    state_city_map = STATE_CITY_MAP
+    item_base_price = ITEM_BASE_PRICE
+    state_price_mu_std = STATE_PRICE_MU_STD
+    # category_item_map = {'Food': ['USDA Grade-A eggs (Dozen)'],
+    #                      'Fuel': ['Regular Gasoline (Gallon)'],
+    #                      'Clothing': ['Wool Socks (Pair)']}
+    # state_city_map = {'California': ['Los Angeles', 'San Francisco'],
+    #                   'New York': ['New York City'],
+    #                   'Texas': ['Austin', 'Dallas']}
+    # item_base_price = {'USDA Grade-A eggs (Dozen)': 2.99,
+    #                    'Regular Gasoline (Gallon)': 4.65,
+    #                    'Wool Socks (Pair)': 21.95}
+    # state_price_mu_std = {'California': (1.5, 0.15),
+    #                       'New York': (1.75, 0.25),
+    #                       'Texas': (1, 0.10)}
 
     @classmethod
     @functools.lru_cache(maxsize=None)
