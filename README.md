@@ -83,6 +83,7 @@ The following tasks should be completed by the candidate in their preferred orde
 1. Added a ``requirements.txt`` file to specify the required packages of the project.
 2. Use a configuration file ``config.py`` to store the constants like ``db_file``, and the app supported ranges stated in ``CATEGORY_ITEM_MAP``. We can easily add more supported items in the constants in the configuration file. By utilizing the configuration file, the app is easier for future development.
 3. Use a utils file ``utils.py`` for helper functions like ``sqlize`` and ``custom_rounding``. These functions serve a general purpose and can be reused in other projects.
+4. Enabling git version control for the project for better code management and tracking.
 
 * Testing:
 1. Implemented unit tests for ``Observation.delete_matching`` in test_cpi.py.
